@@ -1,27 +1,33 @@
 const dgram = require('dgram');
+const readline = require('readline');
 
 const RECEIVE_PORT = 31337;
 const TRANSMIT_PORT = 31338;
 
 var HOST = '127.0.0.1';
 
-
+// Set up the "fake drone"
+// Listens for message 'command' from a client, and opens a socket
+// back to the client over which status messages are sent.
 var fakeDrone = dgram.createSocket('udp4');
 fakeDrone.on('listening', function () {
     var address = fakeDrone.address();
     console.log('Fake drone listening on ' + address.address + ":" + address.port);
 });
 fakeDrone.on('message', function (message, remote) {
-    console.log(remote.address + ':' + remote.port + ' - ' + message);
+    console.log('Received message');
     if (message == "command") {
-        handshake(remote.address);
+        startConnection(remote.address);
     }
 });
 fakeDrone.bind(RECEIVE_PORT, HOST);
 
+// Keep track of the clients that have connected
 var clients = [];
 
-function handshake(remoteAddress) {
+// Open the socket back to the client, and send period status messaged
+function startConnection(remoteAddress) {
+    console.log('Starting connection...');
     var fakeDroneClient = dgram.createSocket('udp4');
     var messageCount = 0;
     var transmitInterval = setInterval(() => {
@@ -31,18 +37,29 @@ function handshake(remoteAddress) {
         fakeDroneClient.send(message, 0, message.length, TRANSMIT_PORT, remoteAddress);
     }, 1500);
 
+    // Hold on to the socket and interval so that we can clean up after ourselves
     clients.push({
         socket: fakeDroneClient,
         interval: transmitInterval
     });
 }
 
-// Wait for input in the terminal
-process.stdin.setRawMode(true);
-process.stdin.resume();
-process.stdin.on('data', process.exit.bind(process, 0));
 
-clients.forEach(client => {
-    clearInterval(client.interval);
-    client.socket.close();
+const input = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+});
+// When the user presses enter on the command line...
+input.on('line', () => {
+
+    // Close the client connections
+    clients.forEach(client => {
+        clearInterval(client.interval);
+        client.socket.close();
+    });
+
+    // close our command port
+    fakeDrone.close();
+
+    process.exit();
 });

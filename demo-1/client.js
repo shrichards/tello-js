@@ -1,25 +1,34 @@
 const dgram = require('dgram');
+const readline = require('readline')
 
 const RECEIVE_PORT = 31338;
 const TRANSMIT_PORT = 31337;
 
 var HOST = '127.0.0.1';
 
-
-var droneClient = dgram.createSocket('udp4');
-droneClient.on('listening', function () {
-    var address = droneClient.address();
+// Set up a socket to listed for status updates from the fake dronw
+var droneStatus = dgram.createSocket('udp4');
+droneStatus.on('listening', function () {
+    var address = droneStatus.address();
     console.log('Drone client listening on ' + address.address + ":" + address.port);
 });
-droneClient.on('message', function (message, remote) {
+droneStatus.on('message', function (message) {
     console.log(`From fake drone: ${message}`);
 });
-droneClient.bind(RECEIVE_PORT, HOST);
+droneStatus.bind(RECEIVE_PORT, HOST);
 
-
+// Tell the fake drone that we're ready to get status updates
 var droneCommand = dgram.createSocket('udp4');
 droneCommand.send('command', 0, 'command'.length, TRANSMIT_PORT, HOST);
 
-process.stdin.setRawMode(true);
-process.stdin.resume();
-process.stdin.on('data', process.exit.bind(process, 0));
+
+const input = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+});
+// When the user presses enter on the command line...
+input.on('line', () => {
+    droneCommand.close();
+    droneStatus.close();
+    process.exit();
+});
