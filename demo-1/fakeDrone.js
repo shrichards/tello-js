@@ -8,7 +8,7 @@ var HOST = '127.0.0.1';
 
 // Set up the "fake drone"
 // Listens for message 'command' from a client, and opens a socket
-// back to the client over which status messages are sent.
+// back to the client over which "status" messages are sent.
 var fakeDrone = dgram.createSocket('udp4');
 fakeDrone.on('listening', function () {
     var address = fakeDrone.address();
