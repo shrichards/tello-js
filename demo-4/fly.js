@@ -1,5 +1,4 @@
 const Drone = require('./drone');
-const delay = require('./delay');
 const readline = require(`readline`);
 
 
