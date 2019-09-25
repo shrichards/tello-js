@@ -6,7 +6,7 @@ const TRANSMIT_PORT = 31337;
 
 var HOST = '127.0.0.1';
 
-// Set up a socket to listed for status updates from the fake dronw
+// Set up a socket to listed for status updates from the fake drone
 var droneStatus = dgram.createSocket('udp4');
 droneStatus.on('listening', function () {
     var address = droneStatus.address();

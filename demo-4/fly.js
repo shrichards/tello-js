@@ -13,6 +13,16 @@ const STATUS_PORT = 8890;
 
     await tello.takeoff();
 
+    await tello.up(50);
+
+    await tello.forward(125);
+
+    await tello.back(125);
+
+    await tello.flipLeft();
+
+    await tello.flipRight();
+
     await tello.land();
 
     const input = readline.createInterface({
