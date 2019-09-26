@@ -1,6 +1,5 @@
 const dgram = require('dgram');
 const delay = require('./delay');
-const commandDelays = require('./commandDelays');
 
 class Drone {
 
